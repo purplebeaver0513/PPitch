@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Pitch Master & Recorder</title>
+    <title>Ultimate Pitch Master & Key Lab</title>
     <style>
         :root {
             --bg: #121212;
@@ -15,7 +15,7 @@
         }
 
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', sans-serif; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -23,7 +23,6 @@
             background: var(--bg); 
             color: var(--text); 
             margin: 0; 
-            overflow-x: hidden;
         }
 
         .container { 
@@ -36,204 +35,165 @@
             max-width: 1000px; 
         }
 
-        #chord-display { 
-            font-size: 2rem; 
-            color: var(--accent); 
-            min-height: 45px; 
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+        #chord-display { font-size: 1.8rem; color: var(--accent); min-height: 45px; margin-bottom: 10px; font-weight: bold; }
+
+        /* Key Signature & Accidental Controls */
+        .settings-panel {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #444;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
-        .stats { 
-            display: flex; 
-            justify-content: space-around; 
-            margin-bottom: 15px; 
-            flex-wrap: wrap; 
-            gap: 10px; 
+        select {
+            width: 100%;
+            padding: 10px;
+            background: #444;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 6px;
+            cursor: pointer;
         }
 
-        .stat-box { 
-            background: #2d2d2d; 
-            padding: 10px; 
-            border-radius: 12px; 
-            min-width: 110px; 
-            border: 1px solid #444; 
-            flex: 1; 
+        .accidental-grid { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
+        .acc-btn {
+            padding: 5px 8px;
+            font-size: 0.75rem;
+            background: #444;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid transparent;
         }
+        .acc-btn.active { background: var(--accent); border-color: white; }
 
-        .stat-val { 
-            font-size: 1.3rem; 
-            font-weight: bold; 
-            color: var(--correct); 
-        }
+        .stats { display: flex; justify-content: space-around; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+        .stat-box { background: #2d2d2d; padding: 10px; border-radius: 12px; min-width: 100px; border: 1px solid #444; flex: 1; }
+        .stat-val { font-size: 1.3rem; font-weight: bold; color: var(--correct); }
 
-        /* Keyboard Styles */
-        .keyboard-wrapper { 
-            overflow-x: auto; 
-            background: #000; 
-            padding: 25px 10px; 
-            border-radius: 15px; 
-            margin: 20px 0; 
-            display: flex; 
-            scroll-behavior: smooth;
-        }
-
-        #keyboard { 
-            display: flex; 
-            position: relative; 
-            height: 180px; 
-            margin: 0 auto;
-        }
-
-        .key { 
-            border: 1px solid #888; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: flex-end; 
-            justify-content: center; 
-            padding-bottom: 10px; 
-            font-size: 0.75rem; 
-            border-radius: 0 0 6px 6px; 
-            flex-shrink: 0; 
-            user-select: none; 
-            transition: background 0.1s, transform 0.05s;
-        }
-
-        .key:active { transform: translateY(2px); }
-
-        .white { 
-            background: white; 
-            color: #333; 
-            width: 40px; 
-            height: 100%; 
-            z-index: 1; 
-        }
-
-        .black { 
-            background: #333; 
-            color: white; 
-            width: 26px; 
-            height: 60%; 
-            margin-left: -13px; 
-            margin-right: -13px; 
-            z-index: 2; 
-            border: 1px solid #000; 
-        }
+        .keyboard-wrapper { overflow-x: auto; background: #000; padding: 25px 10px; border-radius: 15px; margin: 20px 0; display: flex; }
+        #keyboard { display: flex; position: relative; height: 160px; margin: 0 auto; }
+        .key { border: 1px solid #888; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; font-size: 0.7rem; border-radius: 0 0 6px 6px; flex-shrink: 0; user-select: none; }
+        .white { background: white; color: #333; width: 35px; height: 100%; z-index: 1; }
+        .black { background: #333; color: white; width: 22px; height: 60%; margin-left: -11px; margin-right: -11px; z-index: 2; border: 1px solid #000; }
         
         .active-play { background: #90caf9 !important; border-color: #2196F3; }
-        .correct { background: var(--correct) !important; color: white; }
-        .wrong { background: var(--wrong) !important; color: white; }
+        .correct { background: var(--correct) !important; }
+        .wrong { background: var(--wrong) !important; }
 
-        /* Controls */
-        .controls { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); 
-            gap: 10px; 
-        }
-
-        button { 
-            padding: 14px; 
-            border: none; 
-            border-radius: 10px; 
-            font-size: 0.9rem; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: all 0.2s;
-            color: white;
-        }
-
-        button:hover { filter: brightness(1.1); }
-        button:active { transform: scale(0.97); }
-
-        .btn-main { background: var(--correct); grid-column: span 2; font-size: 1.1rem; }
-        .btn-next { background: #ff9800; grid-column: span 2; font-size: 1.1rem; }
+        .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        button { padding: 12px; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-main { background: var(--correct); grid-column: span 2; }
+        .btn-next { background: #ff9800; grid-column: span 2; }
         .btn-rec { background: #e91e63; }
-        .btn-stop { background: #607d8b; }
         .btn-play-rec { background: #9c27b0; }
         .btn-download { background: #009688; }
-        .btn-reveal { background: #444; grid-column: span 4; margin-top: 5px; }
-
-        #rec-status.recording .rec-dot { 
-            background-color: #ff4444; 
-            animation: blink 1s infinite; 
-        }
-
-        .rec-dot { 
-            height: 12px; 
-            width: 12px; 
-            background-color: #555; 
-            border-radius: 50%; 
-            display: inline-block; 
-            margin-bottom: -1px;
-        }
-
-        @keyframes blink { 50% { opacity: 0.3; } }
-
-        .key-hints {
-            margin-top: 20px;
-            font-size: 0.8rem;
-            color: #888;
-            border-top: 1px solid #333;
-            padding-top: 15px;
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="chord-display">Play a Chord or Note</div>
+    <div id="chord-display">Free Play Mode</div>
+
+    <div class="settings-panel">
+        <div>
+            <div style="font-size: 0.8rem; margin-bottom: 5px; color: #aaa;">KEY SIGNATURE</div>
+            <select id="key-sig-select">
+                <option value="C">C Major (No Sharps/Flats)</option>
+                <option value="G">G Major (F#)</option>
+                <option value="D">D Major (F#, C#)</option>
+                <option value="A">A Major (F#, C#, G#)</option>
+                <option value="E">E Major (F#, C#, G#, D#)</option>
+                <option value="B">B Major (F#, C#, G#, D#, A#)</option>
+                <option value="F">F Major (Bb)</option>
+                <option value="Bb">Bb Major (Bb, Eb)</option>
+                <option value="Eb">Eb Major (Bb, Eb, Ab)</option>
+            </select>
+        </div>
+        <div>
+            <div style="font-size: 0.8rem; margin-bottom: 5px; color: #aaa;">MANUAL ACCIDENTALS</div>
+            <div class="accidental-grid" id="acc-grid"></div>
+        </div>
+    </div>
     
     <div class="stats">
         <div class="stat-box">Correct<br><span id="score-correct" class="stat-val">0</span></div>
         <div class="stat-box">Total<br><span id="score-total" class="stat-val">0</span></div>
-        <div class="stat-box" id="rec-status">
-            <span class="rec-dot"></span> REC<br><span id="rec-time" class="stat-val">OFF</span>
-        </div>
         <div class="stat-box">Active<br><span id="active-note-name" class="stat-val">-</span></div>
     </div>
 
-    <div class="keyboard-wrapper">
-        <div id="keyboard"></div>
-    </div>
+    <div class="keyboard-wrapper"><div id="keyboard"></div></div>
     
     <div class="controls">
         <button id="play-btn" class="btn-main">🔊 Repeat Target Pitch</button>
         <button id="next-btn" class="btn-next">⏭️ New Random Note</button>
         <button id="rec-btn" class="btn-rec">● Record</button>
-        <button id="stop-btn" class="btn-stop">■ Stop</button>
+        <button id="stop-btn" style="background:#555;">■ Stop</button>
         <button id="play-rec-btn" class="btn-play-rec">▶ Playback</button>
         <button id="download-btn" class="btn-download">💾 Download</button>
-        <button id="reveal-btn" class="btn-reveal">I give up, reveal the answer</button>
-    </div>
-
-    <div class="key-hints">
-        PC Keys: 1-7 (C2-B2) | 8-0 (C3-E3) | Q-R (F3-B3) | T-A (C4-B4) | S-K (C5-B5) | Z-M (C6-B6) <br>
-        <i>Use SHIFT for sharps (e.g., Shift + 1 = C#2)</i>
     </div>
 </div>
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const naturalBase = ["C", "D", "E", "F", "G", "A", "B"];
     
-    // Mapping keys to notes
-    const keyMap = {
-        '1':'C2','!':'C#2','2':'D2','@':'D#2','3':'E2','4':'F2','$':'F#2','5':'G2','%':'G#2','6':'A2','^':'A#2','7':'B2',
-        '8':'C3','*':'C#3','9':'D3','(':'D#3','0':'E3','q':'F3','Q':'F#3','w':'G3','W':'G#3','e':'A3','E':'A#3','r':'B3',
-        't':'C4','T':'C#4','y':'D4','Y':'D#4','u':'E4','i':'F4','I':'F#4','o':'G4','O':'G#4','p':'A4','P':'A#4','a':'B4',
-        's':'C5','S':'C#5','d':'D5','D':'D#5','f':'E5','g':'F5','G':'F#5','h':'G5','H':'G#5','j':'A5','J':'A#5','k':'B5',
-        'z':'C6','Z':'C#6','x':'D6','X':'D#6','c':'E6','v':'F6','V':'F#6','b':'G6','B':'G#6','n':'A6','N':'A#6','m':'B6'
+    const keySignatures = {
+        "C": [], "G": ["F#"], "D": ["F#", "C#"], "A": ["F#", "C#", "G#"], 
+        "E": ["F#", "C#", "G#", "D#"], "B": ["F#", "C#", "G#", "D#", "A#"],
+        "F": ["Bb"], "Bb": ["Bb", "Eb"], "Eb": ["Bb", "Eb", "Ab"]
     };
 
-    const chordIntervals = {
-        "0,4,7": "Major", "0,3,7": "Minor", "0,4,7,10": "7th", "0,3,7,10": "m7",
-        "0,4,7,11": "Maj7", "0,2,7": "sus2", "0,5,7": "sus4", "0,3,6": "dim", "0,4,8": "aug"
-    };
-
+    let activeAccidentals = {}; // e.g., { "F": "F#" }
     let currentFreq, currentNoteFull, hasGuessed = false, score = 0, total = 0;
     let isRecording = false, startTime = 0, recordedNotes = [];
-    let heldNotes = new Set();
+
+    const keyMap = {
+        '1':'C2','2':'D2','3':'E2','4':'F2','5':'G2','6':'A2','7':'B2',
+        '8':'C3','9':'D3','0':'E3','q':'F3','w':'G3','e':'A3','r':'B3',
+        't':'C4','y':'D4','u':'E4','i':'F4','o':'G4','p':'A4','a':'B4',
+        's':'C5','d':'D5','f':'E5','g':'F5','h':'G5','j':'A5','k':'B5',
+        'z':'C6','x':'D6','c':'E6','v':'F6','b':'G6','n':'A6','m':'B6'
+    };
+
+    function initAccidentals() {
+        const grid = document.getElementById('acc-grid');
+        naturalBase.forEach(n => {
+            const btn = document.createElement('div');
+            btn.className = 'acc-btn';
+            btn.innerText = n + "#";
+            btn.onclick = () => toggleManualAccidental(n, n + "#", btn);
+            grid.appendChild(btn);
+        });
+    }
+
+    function toggleManualAccidental(base, target, btn) {
+        if (activeAccidentals[base] === target) {
+            delete activeAccidentals[base];
+            btn.classList.remove('active');
+        } else {
+            activeAccidentals[base] = target;
+            btn.classList.add('active');
+        }
+    }
+
+    document.getElementById('key-sig-select').onchange = (e) => {
+        activeAccidentals = {};
+        const sig = keySignatures[e.target.value];
+        sig.forEach(note => {
+            const base = note.substring(0, 1);
+            activeAccidentals[base] = note;
+        });
+        // Sync UI
+        document.querySelectorAll('.acc-btn').forEach(btn => {
+            const base = btn.innerText.charAt(0);
+            btn.classList.toggle('active', !!activeAccidentals[base]);
+        });
+    };
 
     function createKeyboard() {
         const kb = document.getElementById('keyboard');
@@ -242,7 +202,7 @@
                 if (oct === 8 && noteName !== "C") return;
                 const key = document.createElement('div');
                 key.className = `key ${noteName.includes('#') ? 'black' : 'white'}`;
-                key.id = `key-${noteName}${oct}`;
+                key.id = `key-${noteName.replace('#', 's')}${oct}`;
                 if (noteName === "C") key.innerText = "C" + oct;
                 key.onmousedown = () => handleInput(noteName + oct);
                 kb.appendChild(key);
@@ -250,168 +210,86 @@
         }
     }
 
-    function detectChord() {
-        if (heldNotes.size < 2) {
-            document.getElementById('chord-display').innerText = heldNotes.size === 1 ? Array.from(heldNotes)[0] : "Play a Chord";
-            return;
-        }
-
-        let sorted = Array.from(heldNotes).sort((a, b) => {
-            const getVal = s => notes.indexOf(s.replace(/[0-9]/g, '')) + (parseInt(s.replace(/\D/g, '')) * 12);
-            return getVal(a) - getVal(b);
-        });
-
-        let rootNote = sorted[0].replace(/[0-9]/g, '');
-        let rootVal = notes.indexOf(rootNote);
-        let intervals = sorted.map(n => {
-            let val = notes.indexOf(n.replace(/[0-9]/g, '')) - rootVal;
-            return val < 0 ? val + 12 : val;
-        });
-        
-        let uniqueIntervals = [...new Set(intervals)].sort((a,b) => a-b).join(',');
-        let chordType = chordIntervals[uniqueIntervals] || "Chord";
-        document.getElementById('chord-display').innerText = rootNote + " " + chordType;
-    }
-
     function playTone(freq, octave, time = audioCtx.currentTime) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        
-        // Use Triangle for bass, Sine for high notes
         osc.type = (octave <= 3) ? 'triangle' : 'sine';
         osc.frequency.setValueAtTime(freq, time);
-        
-        // Dynamic volume boost for lower notes
-        let volumeScale = (octave <= 2) ? 0.7 : (octave === 3) ? 0.5 : 0.25;
-        if (octave >= 7) volumeScale = 0.12;
-
-        gain.gain.setValueAtTime(volumeScale, time);
+        let vol = (octave <= 2) ? 0.7 : (octave === 3) ? 0.5 : 0.25;
+        gain.gain.setValueAtTime(vol, time);
         gain.gain.exponentialRampToValueAtTime(0.001, time + 1.2);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(time);
-        osc.stop(time + 1.2);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(time); osc.stop(time + 1.2);
     }
 
     function handleInput(noteStr) {
-        const name = noteStr.replace(/[0-9]/g, '');
-        const oct = parseInt(noteStr.replace(/\D/g, ''));
-        const freq = 440 * Math.pow(2, (notes.indexOf(name) + (oct * 12) - 57) / 12);
+        let base = noteStr.replace(/[0-9]/g, '');
+        let oct = parseInt(noteStr.replace(/\D/g, ''));
         
-        playTone(freq, oct);
-        heldNotes.add(noteStr);
-        detectChord();
-        document.getElementById('active-note-name').innerText = noteStr;
-
-        if (isRecording) {
-            recordedNotes.push({ note: noteStr, time: Date.now() - startTime });
+        // Handle flats to sharps conversion for logic (Bb -> A#)
+        if (activeAccidentals[base]) {
+            base = activeAccidentals[base].replace('Bb', 'A#').replace('Eb', 'D#').replace('Ab', 'G#');
         }
 
-        const keyEl = document.getElementById(`key-${noteStr}`);
+        const freq = 440 * Math.pow(2, (notes.indexOf(base) + (oct * 12) - 57) / 12);
+        playTone(freq, oct);
+        document.getElementById('active-note-name').innerText = base + oct;
+
+        const keyEl = document.getElementById(`key-${base.replace('#', 's')}${oct}`);
         if (keyEl) {
             keyEl.classList.add('active-play');
-            setTimeout(() => {
-                keyEl.classList.remove('active-play');
-                heldNotes.delete(noteStr);
-                if (heldNotes.size === 0) document.getElementById('active-note-name').innerText = "-";
-            }, 250);
+            setTimeout(() => keyEl.classList.remove('active-play'), 200);
         }
 
-        // Perfect Pitch Game Logic
+        if (isRecording) recordedNotes.push({ note: base + oct, time: Date.now() - startTime });
+
         if (!hasGuessed && currentNoteFull) {
             total++;
-            if (noteStr === currentNoteFull) {
+            if ((base + oct) === currentNoteFull) {
                 score++;
-                keyEl.classList.add('correct');
-                document.getElementById('chord-display').innerText = "CORRECT: " + currentNoteFull;
+                document.getElementById('chord-display').innerText = "Correct!";
             } else {
-                keyEl.classList.add('wrong');
-                document.getElementById('chord-display').innerText = "WRONG: Was " + currentNoteFull;
-                document.getElementById(`key-${currentNoteFull}`).classList.add('correct');
+                document.getElementById('chord-display').innerText = "Wrong (was " + currentNoteFull + ")";
             }
             hasGuessed = true;
-            updateScoreDisplay();
+            document.getElementById('score-correct').innerText = score;
+            document.getElementById('score-total').innerText = total;
         }
     }
 
-    function updateScoreDisplay() {
-        document.getElementById('score-correct').innerText = score;
-        document.getElementById('score-total').innerText = total;
-    }
-
-    // Recording Controls
-    document.getElementById('rec-btn').onclick = () => {
-        isRecording = true; recordedNotes = []; startTime = Date.now();
-        document.getElementById('rec-status').classList.add('recording');
-        document.getElementById('rec-time').innerText = "LIVE";
-    };
-
-    document.getElementById('stop-btn').onclick = () => {
-        isRecording = false;
-        document.getElementById('rec-status').classList.remove('recording');
-        document.getElementById('rec-time').innerText = "IDLE";
-    };
-
+    // Recording and App Initialization
+    document.getElementById('rec-btn').onclick = () => { isRecording = true; recordedNotes = []; startTime = Date.now(); };
+    document.getElementById('stop-btn').onclick = () => { isRecording = false; };
     document.getElementById('download-btn').onclick = () => {
-        if (recordedNotes.length === 0) return alert("Record something first!");
-        let data = "Notes: " + recordedNotes.map(n => n.note).join(", ");
-        const blob = new Blob([data], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
+        const blob = new Blob([recordedNotes.map(n => n.note).join(", ")], { type: 'text/plain' });
         const a = document.createElement('a');
-        a.href = url;
-        a.download = 'piano_session.txt';
+        a.href = URL.createObjectURL(blob);
+        a.download = 'recording.txt';
         a.click();
     };
-
     document.getElementById('play-rec-btn').onclick = () => {
-        if (recordedNotes.length === 0) return;
         const now = audioCtx.currentTime;
         recordedNotes.forEach(n => {
             const oct = parseInt(n.note.replace(/\D/g, ''));
-            const name = n.note.replace(/[0-9]/g, '');
-            const freq = 440 * Math.pow(2, (notes.indexOf(name) + (oct * 12) - 57) / 12);
+            const freq = 440 * Math.pow(2, (notes.indexOf(n.note.replace(/[0-9]/g, '')) + (oct * 12) - 57) / 12);
             playTone(freq, oct, now + (n.time / 1000));
         });
     };
 
-    function generateNewNote() {
-        const nIdx = Math.floor(Math.random() * 12);
-        const oct = Math.floor(Math.random() * 8) + 1;
+    function generateNote() {
+        const nIdx = Math.floor(Math.random() * 12), oct = Math.floor(Math.random() * 8) + 1;
         currentNoteFull = (oct === 8) ? "C8" : notes[nIdx] + oct;
         currentFreq = 440 * Math.pow(2, (nIdx + (oct * 12) - 57) / 12);
         hasGuessed = false;
-        document.getElementById('chord-display').innerText = "Identify the Pitch...";
-        document.querySelectorAll('.key').forEach(k => k.classList.remove('correct', 'wrong'));
+        document.getElementById('chord-display').innerText = "Identify the note...";
         playTone(currentFreq, oct);
     }
 
-    // Event Listeners
-    window.addEventListener('keydown', (e) => {
-        if (keyMap[e.key]) {
-            e.preventDefault();
-            handleInput(keyMap[e.key]);
-        }
-    });
+    window.addEventListener('keydown', (e) => { if (keyMap[e.key]) { e.preventDefault(); handleInput(keyMap[e.key]); } });
+    document.getElementById('play-btn').onclick = () => playTone(currentFreq, parseInt(currentNoteFull.replace(/\D/g, '')));
+    document.getElementById('next-btn').onclick = generateNote;
 
-    document.getElementById('play-btn').onclick = () => {
-        const oct = parseInt(currentNoteFull.replace(/\D/g, ''));
-        playTone(currentFreq, oct);
-    };
-
-    document.getElementById('next-btn').onclick = generateNewNote;
-
-    document.getElementById('reveal-btn').onclick = () => {
-        if (hasGuessed) return;
-        document.getElementById(`key-${currentNoteFull}`).classList.add('correct');
-        document.getElementById('chord-display').innerText = "Note: " + currentNoteFull;
-        hasGuessed = true;
-    };
-
-    // Init
-    createKeyboard();
-    generateNewNote();
+    initAccidentals(); createKeyboard(); generateNote();
 </script>
 </body>
 </html>
