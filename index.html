@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Pitch Master & Key Lab</title>
+    <title>Ultimate Pitch Master: Shift & Natural Logic</title>
     <style>
         :root {
             --bg: #121212;
@@ -14,59 +14,20 @@
             --text: #ffffff;
         }
 
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-        }
-
-        .container { 
-            background: var(--container-bg); 
-            padding: 25px; 
-            border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
-            text-align: center; 
-            width: 95vw; 
-            max-width: 1000px; 
-        }
-
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg); color: var(--text); margin: 0; }
+        .container { background: var(--container-bg); padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 95vw; max-width: 1000px; }
         #chord-display { font-size: 1.8rem; color: var(--accent); min-height: 45px; margin-bottom: 10px; font-weight: bold; }
 
-        /* Key Signature & Accidental Controls */
         .settings-panel {
-            background: #2d2d2d;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #444;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            background: #2d2d2d; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #444;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
         }
 
-        select {
-            width: 100%;
-            padding: 10px;
-            background: #444;
-            color: white;
-            border: 1px solid #555;
-            border-radius: 6px;
-            cursor: pointer;
-        }
+        select { width: 100%; padding: 10px; background: #444; color: white; border: 1px solid #555; border-radius: 6px; }
 
         .accidental-grid { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
         .acc-btn {
-            padding: 5px 8px;
-            font-size: 0.75rem;
-            background: #444;
-            border-radius: 4px;
-            cursor: pointer;
-            border: 1px solid transparent;
+            padding: 5px 8px; font-size: 0.75rem; background: #444; border-radius: 4px; cursor: pointer; border: 1px solid transparent;
         }
         .acc-btn.active { background: var(--accent); border-color: white; }
 
@@ -81,8 +42,8 @@
         .black { background: #333; color: white; width: 22px; height: 60%; margin-left: -11px; margin-right: -11px; z-index: 2; border: 1px solid #000; }
         
         .active-play { background: #90caf9 !important; border-color: #2196F3; }
-        .correct { background: var(--correct) !important; }
-        .wrong { background: var(--wrong) !important; }
+        .correct { background: var(--correct) !important; color: white; }
+        .wrong { background: var(--wrong) !important; color: white; }
 
         .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         button { padding: 12px; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
@@ -91,6 +52,7 @@
         .btn-rec { background: #e91e63; }
         .btn-play-rec { background: #9c27b0; }
         .btn-download { background: #009688; }
+        .key-hints { margin-top: 15px; font-size: 0.8rem; color: #777; }
     </style>
 </head>
 <body>
@@ -102,19 +64,17 @@
         <div>
             <div style="font-size: 0.8rem; margin-bottom: 5px; color: #aaa;">KEY SIGNATURE</div>
             <select id="key-sig-select">
-                <option value="C">C Major (No Sharps/Flats)</option>
+                <option value="C">C Major (All Natural)</option>
                 <option value="G">G Major (F#)</option>
                 <option value="D">D Major (F#, C#)</option>
                 <option value="A">A Major (F#, C#, G#)</option>
                 <option value="E">E Major (F#, C#, G#, D#)</option>
                 <option value="B">B Major (F#, C#, G#, D#, A#)</option>
                 <option value="F">F Major (Bb)</option>
-                <option value="Bb">Bb Major (Bb, Eb)</option>
-                <option value="Eb">Eb Major (Bb, Eb, Ab)</option>
             </select>
         </div>
         <div>
-            <div style="font-size: 0.8rem; margin-bottom: 5px; color: #aaa;">MANUAL ACCIDENTALS</div>
+            <div style="font-size: 0.8rem; margin-bottom: 5px; color: #aaa;">ACTIVE ACCIDENTALS</div>
             <div class="accidental-grid" id="acc-grid"></div>
         </div>
     </div>
@@ -122,7 +82,7 @@
     <div class="stats">
         <div class="stat-box">Correct<br><span id="score-correct" class="stat-val">0</span></div>
         <div class="stat-box">Total<br><span id="score-total" class="stat-val">0</span></div>
-        <div class="stat-box">Active<br><span id="active-note-name" class="stat-val">-</span></div>
+        <div class="stat-box">Active Note<br><span id="active-note-name" class="stat-val">-</span></div>
     </div>
 
     <div class="keyboard-wrapper"><div id="keyboard"></div></div>
@@ -135,6 +95,7 @@
         <button id="play-rec-btn" class="btn-play-rec">▶ Playback</button>
         <button id="download-btn" class="btn-download">💾 Download</button>
     </div>
+    <div class="key-hints">Tip: Shift + Key plays the sharp. If a note is already sharped by the menu, Shift + Key plays the Natural!</div>
 </div>
 
 <script>
@@ -144,11 +105,10 @@
     
     const keySignatures = {
         "C": [], "G": ["F#"], "D": ["F#", "C#"], "A": ["F#", "C#", "G#"], 
-        "E": ["F#", "C#", "G#", "D#"], "B": ["F#", "C#", "G#", "D#", "A#"],
-        "F": ["Bb"], "Bb": ["Bb", "Eb"], "Eb": ["Bb", "Eb", "Ab"]
+        "E": ["F#", "C#", "G#", "D#"], "B": ["F#", "C#", "G#", "D#", "A#"], "F": ["A#"] // F major uses Bb, mapped to A# for logic
     };
 
-    let activeAccidentals = {}; // e.g., { "F": "F#" }
+    let activeAccidentals = {}; 
     let currentFreq, currentNoteFull, hasGuessed = false, score = 0, total = 0;
     let isRecording = false, startTime = 0, recordedNotes = [];
 
@@ -165,33 +125,25 @@
         naturalBase.forEach(n => {
             const btn = document.createElement('div');
             btn.className = 'acc-btn';
+            btn.id = `acc-${n}`;
             btn.innerText = n + "#";
-            btn.onclick = () => toggleManualAccidental(n, n + "#", btn);
+            btn.onclick = () => {
+                if(activeAccidentals[n]) delete activeAccidentals[n];
+                else activeAccidentals[n] = n + "#";
+                btn.classList.toggle('active');
+            };
             grid.appendChild(btn);
         });
     }
 
-    function toggleManualAccidental(base, target, btn) {
-        if (activeAccidentals[base] === target) {
-            delete activeAccidentals[base];
-            btn.classList.remove('active');
-        } else {
-            activeAccidentals[base] = target;
-            btn.classList.add('active');
-        }
-    }
-
     document.getElementById('key-sig-select').onchange = (e) => {
         activeAccidentals = {};
+        document.querySelectorAll('.acc-btn').forEach(b => b.classList.remove('active'));
         const sig = keySignatures[e.target.value];
         sig.forEach(note => {
-            const base = note.substring(0, 1);
+            const base = note.charAt(0);
             activeAccidentals[base] = note;
-        });
-        // Sync UI
-        document.querySelectorAll('.acc-btn').forEach(btn => {
-            const base = btn.innerText.charAt(0);
-            btn.classList.toggle('active', !!activeAccidentals[base]);
+            document.getElementById(`acc-${base}`).classList.add('active');
         });
     };
 
@@ -204,7 +156,7 @@
                 key.className = `key ${noteName.includes('#') ? 'black' : 'white'}`;
                 key.id = `key-${noteName.replace('#', 's')}${oct}`;
                 if (noteName === "C") key.innerText = "C" + oct;
-                key.onmousedown = () => handleInput(noteName + oct);
+                key.onmousedown = () => handleInput(noteName + oct, false);
                 kb.appendChild(key);
             });
         }
@@ -222,32 +174,42 @@
         osc.start(time); osc.stop(time + 1.2);
     }
 
-    function handleInput(noteStr) {
+    function handleInput(noteStr, isShifted) {
         let base = noteStr.replace(/[0-9]/g, '');
         let oct = parseInt(noteStr.replace(/\D/g, ''));
         
-        // Handle flats to sharps conversion for logic (Bb -> A#)
-        if (activeAccidentals[base]) {
-            base = activeAccidentals[base].replace('Bb', 'A#').replace('Eb', 'D#').replace('Ab', 'G#');
+        let finalBase = base;
+
+        // Logic: Shift acts as a toggle. 
+        // If accidental is active, Shift makes it natural.
+        // If accidental is NOT active, Shift makes it sharp.
+        if (isShifted) {
+            if (activeAccidentals[base]) finalBase = base; // Force Natural
+            else finalBase = base + "#"; // Force Sharp
+        } else {
+            if (activeAccidentals[base]) finalBase = activeAccidentals[base]; // Use Accidental
         }
 
-        const freq = 440 * Math.pow(2, (notes.indexOf(base) + (oct * 12) - 57) / 12);
-        playTone(freq, oct);
-        document.getElementById('active-note-name').innerText = base + oct;
+        // Catch edge cases (E# -> F, B# -> C)
+        if (finalBase === "E#") finalBase = "F";
+        if (finalBase === "B#") finalBase = "C";
 
-        const keyEl = document.getElementById(`key-${base.replace('#', 's')}${oct}`);
+        const freq = 440 * Math.pow(2, (notes.indexOf(finalBase) + (oct * 12) - 57) / 12);
+        playTone(freq, oct);
+        document.getElementById('active-note-name').innerText = finalBase + oct;
+
+        const keyEl = document.getElementById(`key-${finalBase.replace('#', 's')}${oct}`);
         if (keyEl) {
             keyEl.classList.add('active-play');
             setTimeout(() => keyEl.classList.remove('active-play'), 200);
         }
 
-        if (isRecording) recordedNotes.push({ note: base + oct, time: Date.now() - startTime });
+        if (isRecording) recordedNotes.push({ note: finalBase + oct, time: Date.now() - startTime });
 
         if (!hasGuessed && currentNoteFull) {
             total++;
-            if ((base + oct) === currentNoteFull) {
-                score++;
-                document.getElementById('chord-display').innerText = "Correct!";
+            if ((finalBase + oct) === currentNoteFull) {
+                score++; document.getElementById('chord-display').innerText = "Correct!";
             } else {
                 document.getElementById('chord-display').innerText = "Wrong (was " + currentNoteFull + ")";
             }
@@ -257,15 +219,21 @@
         }
     }
 
-    // Recording and App Initialization
+    window.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        const mapped = keyMap[key] || keyMap[e.key];
+        if (mapped) {
+            e.preventDefault();
+            handleInput(mapped, e.shiftKey);
+        }
+    });
+
     document.getElementById('rec-btn').onclick = () => { isRecording = true; recordedNotes = []; startTime = Date.now(); };
     document.getElementById('stop-btn').onclick = () => { isRecording = false; };
     document.getElementById('download-btn').onclick = () => {
         const blob = new Blob([recordedNotes.map(n => n.note).join(", ")], { type: 'text/plain' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'recording.txt';
-        a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = 'session.txt'; a.click();
     };
     document.getElementById('play-rec-btn').onclick = () => {
         const now = audioCtx.currentTime;
@@ -285,7 +253,6 @@
         playTone(currentFreq, oct);
     }
 
-    window.addEventListener('keydown', (e) => { if (keyMap[e.key]) { e.preventDefault(); handleInput(keyMap[e.key]); } });
     document.getElementById('play-btn').onclick = () => playTone(currentFreq, parseInt(currentNoteFull.replace(/\D/g, '')));
     document.getElementById('next-btn').onclick = generateNote;
 
