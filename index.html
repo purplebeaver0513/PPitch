@@ -3,148 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Pitch Master: Shift & Natural Logic</title>
+    <title>Pitch Master: Sustain Edition</title>
     <style>
-        :root {
-            --bg: #121212;
-            --container-bg: #1e1e1e;
-            --accent: #2196F3;
-            --correct: #4CAF50;
-            --wrong: #f44336;
-            --text: #ffffff;
-        }
-
-        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg); color: var(--text); margin: 0; }
-        .container { background: var(--container-bg); padding: 25px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 95vw; max-width: 1000px; }
-        #chord-display { font-size: 1.8rem; color: var(--accent); min-height: 45px; margin-bottom: 10px; font-weight: bold; }
-
-        .settings-panel {
-            background: #2d2d2d; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #444;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
-        }
-
-        select { width: 100%; padding: 10px; background: #444; color: white; border: 1px solid #555; border-radius: 6px; }
-
-        .accidental-grid { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; }
-        .acc-btn {
-            padding: 5px 8px; font-size: 0.75rem; background: #444; border-radius: 4px; cursor: pointer; border: 1px solid transparent;
-        }
-        .acc-btn.active { background: var(--accent); border-color: white; }
-
-        .stats { display: flex; justify-content: space-around; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-        .stat-box { background: #2d2d2d; padding: 10px; border-radius: 12px; min-width: 100px; border: 1px solid #444; flex: 1; }
-        .stat-val { font-size: 1.3rem; font-weight: bold; color: var(--correct); }
-
-        .keyboard-wrapper { overflow-x: auto; background: #000; padding: 25px 10px; border-radius: 15px; margin: 20px 0; display: flex; }
-        #keyboard { display: flex; position: relative; height: 160px; margin: 0 auto; }
-        .key { border: 1px solid #888; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; font-size: 0.7rem; border-radius: 0 0 6px 6px; flex-shrink: 0; user-select: none; }
-        .white { background: white; color: #333; width: 35px; height: 100%; z-index: 1; }
-        .black { background: #333; color: white; width: 22px; height: 60%; margin-left: -11px; margin-right: -11px; z-index: 2; border: 1px solid #000; }
+        :root { --bg: #121212; --container-bg: #1e1e1e; --accent: #2196F3; --flat: #00bcd4; --sharp: #e91e63; --correct: #4CAF50; --wrong: #f44336; --text: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg); color: var(--text); margin: 0; user-select: none; }
+        .container { background: var(--container-bg); padding: 20px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); text-align: center; width: 95vw; max-width: 1000px; }
         
-        .active-play { background: #90caf9 !important; border-color: #2196F3; }
-        .correct { background: var(--correct) !important; color: white; }
-        .wrong { background: var(--wrong) !important; color: white; }
+        .top-row { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 15px; }
+        #chord-display { font-size: 1.5rem; color: var(--accent); font-weight: bold; background: #2d2d2d; padding: 10px; border-radius: 10px; min-height: 50px; display: flex; align-items: center; justify-content: center; }
+
+        .settings-grid { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 10px; background: #2d2d2d; padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: left; }
+        label { font-size: 0.7rem; color: #aaa; font-weight: bold; margin-bottom: 5px; display: block; }
+        select, input { width: 100%; padding: 8px; background: #444; color: white; border: 1px solid #555; border-radius: 6px; }
+
+        .acc-row { display: flex; gap: 3px; margin-bottom: 4px; justify-content: space-between; }
+        .acc-btn { flex: 1; padding: 4px 0; font-size: 0.7rem; background: #444; border-radius: 4px; cursor: pointer; border: 1px solid transparent; text-align: center; }
+        .acc-btn.sharp-active { background: var(--sharp); border-color: white; }
+        .acc-btn.flat-active { background: var(--flat); border-color: white; color: #000; font-weight: bold; }
+
+        .bend-container { display: flex; flex-direction: column; align-items: center; justify-content: center; background: #333; border-radius: 8px; padding: 5px; }
+        #pitch-bend { appearance: none; width: 90%; height: 8px; background: #555; border-radius: 5px; outline: none; }
+        #pitch-bend::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; background: var(--accent); border-radius: 50%; cursor: pointer; }
+
+        .keyboard-wrapper { overflow-x: auto; background: #000; padding: 20px 5px; border-radius: 15px; margin-bottom: 15px; display: flex; }
+        #keyboard { display: flex; position: relative; height: 140px; margin: 0 auto; }
+        .key { border: 1px solid #888; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; font-size: 0.6rem; border-radius: 0 0 5px 5px; flex-shrink: 0; }
+        .white { background: white; color: #333; width: 30px; height: 100%; z-index: 1; }
+        .black { background: #333; color: white; width: 20px; height: 60%; margin-left: -10px; margin-right: -10px; z-index: 2; border: 1px solid #000; }
+        .active-play { background: #90caf9 !important; border-color: #2196F3; transform: translateY(2px); }
 
         .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        button { padding: 12px; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
+        button { padding: 10px; border: none; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
         .btn-main { background: var(--correct); grid-column: span 2; }
         .btn-next { background: #ff9800; grid-column: span 2; }
         .btn-rec { background: #e91e63; }
         .btn-play-rec { background: #9c27b0; }
-        .btn-download { background: #009688; }
-        .key-hints { margin-top: 15px; font-size: 0.8rem; color: #777; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="chord-display">Free Play Mode</div>
-
-    <div class="settings-panel">
-        <div>
-            <div style="font-size: 0.8rem; margin-bottom: 5px; color: #aaa;">KEY SIGNATURE</div>
-            <select id="key-sig-select">
-                <option value="C">C Major (All Natural)</option>
-                <option value="G">G Major (F#)</option>
-                <option value="D">D Major (F#, C#)</option>
-                <option value="A">A Major (F#, C#, G#)</option>
-                <option value="E">E Major (F#, C#, G#, D#)</option>
-                <option value="B">B Major (F#, C#, G#, D#, A#)</option>
-                <option value="F">F Major (Bb)</option>
-            </select>
-        </div>
-        <div>
-            <div style="font-size: 0.8rem; margin-bottom: 5px; color: #aaa;">ACTIVE ACCIDENTALS</div>
-            <div class="accidental-grid" id="acc-grid"></div>
+    <div class="top-row">
+        <div id="chord-display">Ready</div>
+        <div class="bend-container">
+            <label>PITCH BEND</label>
+            <input type="range" id="pitch-bend" min="-100" max="100" value="0">
         </div>
     </div>
-    
-    <div class="stats">
-        <div class="stat-box">Correct<br><span id="score-correct" class="stat-val">0</span></div>
-        <div class="stat-box">Total<br><span id="score-total" class="stat-val">0</span></div>
-        <div class="stat-box">Active Note<br><span id="active-note-name" class="stat-val">-</span></div>
+
+    <div class="settings-grid">
+        <div>
+            <label>INSTRUMENT</label>
+            <select id="inst-select">
+                <option value="piano">Piano</option>
+                <option value="violin">Violin (Sustain)</option>
+                <option value="cello">Cello (Sustain)</option>
+                <option value="flute">Flute (Sustain)</option>
+                <option value="clarinet">Clarinet (Sustain)</option>
+                <option value="alto-sax">Alto Sax (Sustain)</option>
+                <option value="tenor-sax">Tenor Sax (Sustain)</option>
+                <option value="trumpet">Trumpet (Sustain)</option>
+                <option value="trombone">Trombone (Sustain)</option>
+                <option value="french-horn">French Horn</option>
+                <option value="oboe">Oboe (Sustain)</option>
+                <option value="drums">DRUM KIT</option>
+            </select>
+            <div style="margin-top:10px">
+                <label>KEY SIGNATURE</label>
+                <select id="key-sig-select">
+                    <option value="C">C Major</option>
+                    <option value="G">G Major</option>
+                    <option value="D">D Major</option>
+                    <option value="A">A Major</option>
+                    <option value="E">E Major</option>
+                    <option value="F">F Major</option>
+                    <option value="Bb">Bb Major</option>
+                    <option value="Eb">Eb Major</option>
+                    <option value="Ab">Ab Major</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label>MANUAL ACCIDENTALS</label>
+            <div id="acc-container"></div>
+        </div>
+        <div>
+            <label>EFFECTS & STATS</label>
+            <button id="vibrato-toggle" style="background:#444; width:100%; margin-bottom:5px; font-size:0.7rem;">〰️ Vibrato: OFF</button>
+            <div style="font-size: 0.9rem; margin-top:5px;">Score: <span id="score-correct" style="color:var(--correct)">0</span> / <span id="score-total">0</span></div>
+        </div>
     </div>
 
     <div class="keyboard-wrapper"><div id="keyboard"></div></div>
     
     <div class="controls">
-        <button id="play-btn" class="btn-main">🔊 Repeat Target Pitch</button>
-        <button id="next-btn" class="btn-next">⏭️ New Random Note</button>
-        <button id="rec-btn" class="btn-rec">● Record</button>
+        <button id="play-btn" class="btn-main">🔊 Repeat Target</button>
+        <button id="next-btn" class="btn-next">⏭️ New Pitch</button>
+        <button id="rec-btn" class="btn-rec">● Rec</button>
         <button id="stop-btn" style="background:#555;">■ Stop</button>
-        <button id="play-rec-btn" class="btn-play-rec">▶ Playback</button>
-        <button id="download-btn" class="btn-download">💾 Download</button>
+        <button id="play-rec-btn" class="btn-play-rec">▶ Play</button>
+        <button id="download-btn" style="background:#009688;">💾 Save</button>
     </div>
-    <div class="key-hints">Tip: Shift + Key plays the sharp. If a note is already sharped by the menu, Shift + Key plays the Natural!</div>
 </div>
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     const naturalBase = ["C", "D", "E", "F", "G", "A", "B"];
-    
-    const keySignatures = {
-        "C": [], "G": ["F#"], "D": ["F#", "C#"], "A": ["F#", "C#", "G#"], 
-        "E": ["F#", "C#", "G#", "D#"], "B": ["F#", "C#", "G#", "D#", "A#"], "F": ["A#"] // F major uses Bb, mapped to A# for logic
-    };
+    const flatToSharp = { "Cb":"B", "Db":"C#", "Eb":"D#", "Fb":"E", "Gb":"F#", "Ab":"G#", "Bb":"A#" };
+    const keyMap = {'1':'C2','2':'D2','3':'E2','4':'F2','5':'G2','6':'A2','7':'B2','8':'C3','9':'D3','0':'E3','q':'F3','w':'G3','e':'A3','r':'B3','t':'C4','y':'D4','u':'E4','i':'F4','o':'G4','p':'A4','a':'B4','s':'C5','d':'D5','f':'E5','g':'F5','h':'G5','j':'A5','k':'B5','l':'C6','z':'D7','x':'E7','c':'F7','v':'G7','b':'A7','n':'B7','m':'C8'};
 
-    let activeAccidentals = {}; 
-    let currentFreq, currentNoteFull, hasGuessed = false, score = 0, total = 0;
+    let activeAccs = {}, currentNoteFull, hasGuessed = false, score = 0, total = 0;
     let isRecording = false, startTime = 0, recordedNotes = [];
+    let vibratoEnabled = false;
+    let noiseBuffer = null;
+    
+    // Track active oscillators for sustain
+    let activeVoices = {}; 
 
-    const keyMap = {
-        '1':'C2','2':'D2','3':'E2','4':'F2','5':'G2','6':'A2','7':'B2',
-        '8':'C3','9':'D3','0':'E3','q':'F3','w':'G3','e':'A3','r':'B3',
-        't':'C4','y':'D4','u':'E4','i':'F4','o':'G4','p':'A4','a':'B4',
-        's':'C5','d':'D5','f':'E5','g':'F5','h':'G5','j':'A5','k':'B5',
-        'z':'C6','x':'D6','c':'E6','v':'F6','b':'G6','n':'A6','m':'B6'
-    };
+    function initNoise() {
+        const bufferSize = audioCtx.sampleRate * 2; 
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        noiseBuffer = buffer;
+    }
+    initNoise();
 
     function initAccidentals() {
-        const grid = document.getElementById('acc-grid');
+        const container = document.getElementById('acc-container');
+        const sharpRow = document.createElement('div'); sharpRow.className = 'acc-row';
         naturalBase.forEach(n => {
-            const btn = document.createElement('div');
-            btn.className = 'acc-btn';
-            btn.id = `acc-${n}`;
-            btn.innerText = n + "#";
-            btn.onclick = () => {
-                if(activeAccidentals[n]) delete activeAccidentals[n];
-                else activeAccidentals[n] = n + "#";
-                btn.classList.toggle('active');
-            };
-            grid.appendChild(btn);
+            const btn = document.createElement('div'); btn.className = 'acc-btn'; btn.id = `sharp-${n}`; btn.innerText = n + "#";
+            btn.onclick = () => toggleAccidental(n, n + "#"); sharpRow.appendChild(btn);
         });
+        const flatRow = document.createElement('div'); flatRow.className = 'acc-row';
+        naturalBase.forEach(n => {
+            const btn = document.createElement('div'); btn.className = 'acc-btn'; btn.id = `flat-${n}`; btn.innerText = n + "b";
+            btn.onclick = () => toggleAccidental(n, n + "b"); flatRow.appendChild(btn);
+        });
+        container.appendChild(sharpRow); container.appendChild(flatRow);
+    }
+
+    function toggleAccidental(base, val) {
+        if (activeAccs[base] === val) delete activeAccs[base]; else activeAccs[base] = val;
+        updateAccidentalUI();
+    }
+
+    function updateAccidentalUI() {
+        document.querySelectorAll('.acc-btn').forEach(btn => btn.classList.remove('sharp-active', 'flat-active'));
+        for (let base in activeAccs) {
+            const val = activeAccs[base];
+            if (val.includes('#')) document.getElementById(`sharp-${base}`).classList.add('sharp-active');
+            if (val.includes('b')) document.getElementById(`flat-${base}`).classList.add('flat-active');
+        }
     }
 
     document.getElementById('key-sig-select').onchange = (e) => {
-        activeAccidentals = {};
-        document.querySelectorAll('.acc-btn').forEach(b => b.classList.remove('active'));
-        const sig = keySignatures[e.target.value];
-        sig.forEach(note => {
-            const base = note.charAt(0);
-            activeAccidentals[base] = note;
-            document.getElementById(`acc-${base}`).classList.add('active');
-        });
+        activeAccs = {};
+        const key = e.target.value;
+        const sigs = { "C": [], "G": ["F#"], "D": ["F#","C#"], "A": ["F#","C#","G#"], "E": ["F#","C#","G#","D#"], "F": ["Bb"], "Bb": ["Bb","Eb"], "Eb": ["Bb","Eb","Ab"], "Ab": ["Bb","Eb","Ab","Db"] };
+        if(sigs[key]) sigs[key].forEach(n => activeAccs[n.charAt(0)] = n);
+        updateAccidentalUI();
     };
 
     function createKeyboard() {
@@ -156,107 +176,250 @@
                 key.className = `key ${noteName.includes('#') ? 'black' : 'white'}`;
                 key.id = `key-${noteName.replace('#', 's')}${oct}`;
                 if (noteName === "C") key.innerText = "C" + oct;
-                key.onmousedown = () => handleInput(noteName + oct, false);
+                
+                // MOUSE EVENTS
+                key.onmousedown = (e) => { e.preventDefault(); noteOn(noteName + oct, false); };
+                key.onmouseup = (e) => { e.preventDefault(); noteOff(noteName + oct); };
+                key.onmouseleave = (e) => { e.preventDefault(); noteOff(noteName + oct); };
+                key.ontouchstart = (e) => { e.preventDefault(); noteOn(noteName + oct, false); };
+                key.ontouchend = (e) => { e.preventDefault(); noteOff(noteName + oct); };
+
                 kb.appendChild(key);
             });
         }
     }
 
-    function playTone(freq, octave, time = audioCtx.currentTime) {
+    // --- AUDIO ENGINE ---
+    function startTone(freq, octave, type) {
+        if (type === 'drums') { playDrum(freq); return null; }
+
+        const time = audioCtx.currentTime;
+        const bend = parseFloat(document.getElementById('pitch-bend').value) / 100;
+        const bentFreq = freq * Math.pow(2, bend / 12);
+        
+        const mainGain = audioCtx.createGain();
+        const mainFilter = audioCtx.createBiquadFilter();
         const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = (octave <= 3) ? 'triangle' : 'sine';
-        osc.frequency.setValueAtTime(freq, time);
-        let vol = (octave <= 2) ? 0.7 : (octave === 3) ? 0.5 : 0.25;
-        gain.gain.setValueAtTime(vol, time);
-        gain.gain.exponentialRampToValueAtTime(0.001, time + 1.2);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(time); osc.stop(time + 1.2);
+        
+        mainFilter.type = "lowpass";
+        mainFilter.connect(mainGain);
+        mainGain.connect(audioCtx.destination);
+        
+        let vibOsc = null, vibGain = null;
+        if (vibratoEnabled && type !== 'piano') {
+            vibOsc = audioCtx.createOscillator(); vibGain = audioCtx.createGain();
+            vibOsc.frequency.value = 5; vibGain.gain.value = bentFreq * 0.02;
+            vibOsc.connect(vibGain); vibOsc.start(time);
+            vibGain.connect(osc.frequency);
+        }
+
+        osc.frequency.setValueAtTime(bentFreq, time);
+
+        // ENVELOPES & FILTERS
+        switch(type) {
+            case 'piano': 
+                osc.type = "triangle"; mainFilter.frequency.value = 6000;
+                mainGain.gain.setValueAtTime(0, time);
+                mainGain.gain.linearRampToValueAtTime(0.6, time + 0.02); // Fast attack
+                mainGain.gain.setTargetAtTime(0.4, time + 0.1, 0.5); // Decay to Sustain
+                break;
+            case 'violin':
+                osc.type = "sawtooth"; mainFilter.frequency.value = 2500;
+                mainGain.gain.setValueAtTime(0, time);
+                mainGain.gain.linearRampToValueAtTime(0.35, time + 0.3); // Slow bow attack
+                break;
+            case 'flute':
+                osc.type = "sine"; mainFilter.frequency.value = 2000;
+                const noise = audioCtx.createBufferSource(); noise.buffer = noiseBuffer; noise.loop = true;
+                const ng = audioCtx.createGain(); ng.gain.value = 0.05;
+                noise.connect(mainFilter); noise.start(time);
+                mainGain.gain.linearRampToValueAtTime(0.4, time + 0.1);
+                // Attach noise to return object to stop it later
+                osc.noiseNode = noise;
+                break;
+            case 'clarinet':
+                osc.type = "square"; mainFilter.frequency.value = 900;
+                mainGain.gain.linearRampToValueAtTime(0.3, time + 0.08);
+                break;
+            case 'trumpet':
+                osc.type = "sawtooth"; mainFilter.frequency.value = 4000;
+                mainGain.gain.setValueAtTime(0, time);
+                mainGain.gain.linearRampToValueAtTime(0.3, time + 0.05);
+                break;
+            default: // Sax, Oboe, etc
+                osc.type = type.includes('alto') ? "square" : "sawtooth";
+                mainFilter.frequency.value = type.includes('sax') ? 1500 : 2000;
+                mainGain.gain.setValueAtTime(0, time);
+                mainGain.gain.linearRampToValueAtTime(0.3, time + 0.1);
+        }
+
+        osc.connect(mainFilter);
+        osc.start(time);
+        
+        return { osc, gain: mainGain, type, vibOsc, noiseNode: osc.noiseNode };
     }
 
-    function handleInput(noteStr, isShifted) {
+    function stopTone(voice) {
+        if (!voice) return;
+        const time = audioCtx.currentTime;
+        const release = (voice.type === 'piano') ? 0.3 : 0.1; // Piano rings slightly longer on release
+        
+        voice.gain.gain.cancelScheduledValues(time);
+        voice.gain.gain.setValueAtTime(voice.gain.gain.value, time);
+        voice.gain.gain.exponentialRampToValueAtTime(0.001, time + release);
+        
+        voice.osc.stop(time + release);
+        if(voice.vibOsc) voice.vibOsc.stop(time + release);
+        if(voice.noiseNode) voice.noiseNode.stop(time + release);
+    }
+
+    function playDrum(freq) {
+        const time = audioCtx.currentTime;
+        const idx = Math.round(12 * Math.log2(freq / 440) + 57) % 12;
+        const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        if(idx === 0) { osc.frequency.setValueAtTime(150, time); osc.frequency.exponentialRampToValueAtTime(0.01, time+0.5); }
+        else if(idx === 2) { osc.type="square"; osc.frequency.setValueAtTime(200, time); }
+        else { osc.type="sawtooth"; osc.frequency.setValueAtTime(8000, time); }
+        g.gain.setValueAtTime(0.5, time); g.gain.exponentialRampToValueAtTime(0.01, time+0.3);
+        osc.connect(g); g.connect(audioCtx.destination); osc.start(time); osc.stop(time+0.3);
+    }
+
+    // --- INPUT HANDLING ---
+    
+    function resolveNote(noteStr, isShifted) {
         let base = noteStr.replace(/[0-9]/g, '');
         let oct = parseInt(noteStr.replace(/\D/g, ''));
         
-        let finalBase = base;
+        let activeMod = activeAccs[base];
+        let finalDisplay = base;
 
-        // Logic: Shift acts as a toggle. 
-        // If accidental is active, Shift makes it natural.
-        // If accidental is NOT active, Shift makes it sharp.
         if (isShifted) {
-            if (activeAccidentals[base]) finalBase = base; // Force Natural
-            else finalBase = base + "#"; // Force Sharp
+            if (activeMod) finalDisplay = base; // Natural
+            else finalDisplay = base + "#"; // Sharp
         } else {
-            if (activeAccidentals[base]) finalBase = activeAccidentals[base]; // Use Accidental
+            if (activeMod) finalDisplay = activeMod;
         }
 
-        // Catch edge cases (E# -> F, B# -> C)
-        if (finalBase === "E#") finalBase = "F";
-        if (finalBase === "B#") finalBase = "C";
+        let audioNote = finalDisplay;
+        if (flatToSharp[finalDisplay]) audioNote = flatToSharp[finalDisplay];
+        if (audioNote === "E#") audioNote = "F"; 
+        if (audioNote === "B#") audioNote = "C";
 
-        const freq = 440 * Math.pow(2, (notes.indexOf(finalBase) + (oct * 12) - 57) / 12);
-        playTone(freq, oct);
-        document.getElementById('active-note-name').innerText = finalBase + oct;
+        return { display: finalDisplay + oct, audio: audioNote, oct: oct };
+    }
 
-        const keyEl = document.getElementById(`key-${finalBase.replace('#', 's')}${oct}`);
-        if (keyEl) {
-            keyEl.classList.add('active-play');
-            setTimeout(() => keyEl.classList.remove('active-play'), 200);
-        }
+    function noteOn(noteStr, isShifted) {
+        if (activeVoices[noteStr]) return; // Already playing
 
-        if (isRecording) recordedNotes.push({ note: finalBase + oct, time: Date.now() - startTime });
+        const resolved = resolveNote(noteStr, isShifted);
+        const freq = 440 * Math.pow(2, (notes.indexOf(resolved.audio) + (resolved.oct * 12) - 57) / 12);
+        const inst = document.getElementById('inst-select').value;
+        
+        // Start Audio
+        const voice = startTone(freq, resolved.oct, inst);
+        if (voice) activeVoices[noteStr] = voice; // Store active voice
 
+        // Visuals & Logic
+        document.getElementById('chord-display').innerText = resolved.display;
+        let visualKey = resolved.audio.replace('#', 's');
+        const keyEl = document.getElementById(`key-${visualKey}${resolved.oct}`);
+        if (keyEl) keyEl.classList.add('active-play');
+
+        if (isRecording) recordedNotes.push({ note: resolved.display, time: Date.now() - startTime });
+
+        // Scoring Logic
         if (!hasGuessed && currentNoteFull) {
             total++;
-            if ((finalBase + oct) === currentNoteFull) {
-                score++; document.getElementById('chord-display').innerText = "Correct!";
-            } else {
-                document.getElementById('chord-display').innerText = "Wrong (was " + currentNoteFull + ")";
-            }
-            hasGuessed = true;
-            document.getElementById('score-correct').innerText = score;
-            document.getElementById('score-total').innerText = total;
+            let targetAudio = currentNoteFull;
+            let targetBase = targetAudio.replace(/\d/g,'');
+            if (flatToSharp[targetBase]) targetAudio = flatToSharp[targetBase] + targetAudio.replace(/\D/g,'');
+
+            if ((resolved.audio + resolved.oct) === targetAudio) { score++; document.getElementById('chord-display').innerText = "Correct!"; }
+            else { document.getElementById('chord-display').innerText = "Wrong: " + currentNoteFull; }
+            hasGuessed = true; document.getElementById('score-correct').innerText = score; document.getElementById('score-total').innerText = total;
         }
     }
 
+    function noteOff(noteStr) {
+        if (!activeVoices[noteStr]) return;
+        
+        // Stop Audio
+        stopTone(activeVoices[noteStr]);
+        delete activeVoices[noteStr];
+
+        // Stop Visuals (we have to re-resolve to find the key ID, assumed same shift state not needed for finding key ID usually)
+        // A simple way is to clear ALL keys if we aren't tracking shift state perfectly, but let's try to resolve base.
+        let base = noteStr.replace(/[0-9]/g, '');
+        let oct = parseInt(noteStr.replace(/\D/g, ''));
+        // We iterate to find active key classes or just clear the specific one if we knew the accidental.
+        // Simplification: Remove active-play from ALL keys associated with this note letter/octave
+        // (Since visual key depends on accidental state which might have changed).
+        // Actually, we can just clear active-play from the key calculated by current settings.
+        const resolved = resolveNote(noteStr, false); // Assuming shift released? 
+        // Better: Just clear the specific ID calculated during noteOn.
+        // To do this perfectly, we'd store the DOM ID in activeVoices.
+        // For now, let's just clear the likely candidates.
+        let keyID1 = `key-${base}${oct}`;
+        let keyID2 = `key-${base}s${oct}`;
+        let el1 = document.getElementById(keyID1); if(el1) el1.classList.remove('active-play');
+        let el2 = document.getElementById(keyID2); if(el2) el2.classList.remove('active-play');
+        // Also handle flats mapping to sharps
+        notes.forEach(n => {
+             let k = document.getElementById(`key-${n.replace('#','s')}${oct}`);
+             if(k) k.classList.remove('active-play'); 
+        });
+    }
+
+    // Keyboard Events
     window.addEventListener('keydown', (e) => {
-        const key = e.key.toLowerCase();
-        const mapped = keyMap[key] || keyMap[e.key];
-        if (mapped) {
-            e.preventDefault();
-            handleInput(mapped, e.shiftKey);
-        }
+        if (e.repeat) return;
+        const mapped = keyMap[e.key.toLowerCase()] || keyMap[e.key];
+        if (mapped) { e.preventDefault(); noteOn(mapped, e.shiftKey); }
     });
 
+    window.addEventListener('keyup', (e) => {
+        const mapped = keyMap[e.key.toLowerCase()] || keyMap[e.key];
+        if (mapped) { e.preventDefault(); noteOff(mapped); }
+    });
+
+    // Mouse release safety
+    window.addEventListener('mouseup', () => {
+        for(let n in activeVoices) noteOff(n);
+    });
+
+    // Standard Controls
+    document.getElementById('pitch-bend').onmouseup = function() { this.value = 0; };
+    document.getElementById('vibrato-toggle').onclick = function() { vibratoEnabled = !vibratoEnabled; this.innerText = vibratoEnabled ? "〰️ Vibrato: ON" : "〰️ Vibrato: OFF"; };
     document.getElementById('rec-btn').onclick = () => { isRecording = true; recordedNotes = []; startTime = Date.now(); };
-    document.getElementById('stop-btn').onclick = () => { isRecording = false; };
+    document.getElementById('stop-btn').onclick = () => isRecording = false;
     document.getElementById('download-btn').onclick = () => {
         const blob = new Blob([recordedNotes.map(n => n.note).join(", ")], { type: 'text/plain' });
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-        a.download = 'session.txt'; a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'recording.txt'; a.click();
     };
     document.getElementById('play-rec-btn').onclick = () => {
         const now = audioCtx.currentTime;
         recordedNotes.forEach(n => {
-            const oct = parseInt(n.note.replace(/\D/g, ''));
-            const freq = 440 * Math.pow(2, (notes.indexOf(n.note.replace(/[0-9]/g, '')) + (oct * 12) - 57) / 12);
-            playTone(freq, oct, now + (n.time / 1000));
+            let base = n.note.replace(/[0-9]/g, ''); let oct = parseInt(n.note.replace(/\D/g, ''));
+            if(flatToSharp[base]) base = flatToSharp[base];
+            const freq = 440 * Math.pow(2, (notes.indexOf(base) + (oct * 12) - 57) / 12);
+            // Playback doesn't support sustain in this simple version (it plays fixed length), 
+            // but we use the new startTone logic with a manual stop timeout.
+            const inst = document.getElementById('inst-select').value;
+            const v = startTone(freq, oct, inst);
+            // Auto-stop after 0.5s for playback preview
+            setTimeout(() => stopTone(v), 500);
         });
     };
+    document.getElementById('next-btn').onclick = () => {
+        const nIdx = Math.floor(Math.random() * 12), oct = Math.floor(Math.random() * 5) + 3;
+        currentNoteFull = notes[nIdx] + oct;
+        hasGuessed = false; document.getElementById('chord-display').innerText = "???";
+        const freq = 440 * Math.pow(2, (nIdx + (oct * 12) - 57) / 12);
+        const v = startTone(freq, oct, document.getElementById('inst-select').value);
+        setTimeout(() => stopTone(v), 1000); // Preview length
+    };
 
-    function generateNote() {
-        const nIdx = Math.floor(Math.random() * 12), oct = Math.floor(Math.random() * 8) + 1;
-        currentNoteFull = (oct === 8) ? "C8" : notes[nIdx] + oct;
-        currentFreq = 440 * Math.pow(2, (nIdx + (oct * 12) - 57) / 12);
-        hasGuessed = false;
-        document.getElementById('chord-display').innerText = "Identify the note...";
-        playTone(currentFreq, oct);
-    }
-
-    document.getElementById('play-btn').onclick = () => playTone(currentFreq, parseInt(currentNoteFull.replace(/\D/g, '')));
-    document.getElementById('next-btn').onclick = generateNote;
-
-    initAccidentals(); createKeyboard(); generateNote();
+    initAccidentals(); createKeyboard();
 </script>
 </body>
 </html>
