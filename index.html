@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pitch Master: Sustain Edition</title>
+    <title>Pitch Master: Final Custom Layout</title>
     <style>
         :root { --bg: #121212; --container-bg: #1e1e1e; --accent: #2196F3; --flat: #00bcd4; --sharp: #e91e63; --correct: #4CAF50; --wrong: #f44336; --text: #ffffff; }
         body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: var(--bg); color: var(--text); margin: 0; user-select: none; }
@@ -31,6 +31,7 @@
         .white { background: white; color: #333; width: 30px; height: 100%; z-index: 1; }
         .black { background: #333; color: white; width: 20px; height: 60%; margin-left: -10px; margin-right: -10px; z-index: 2; border: 1px solid #000; }
         .active-play { background: #90caf9 !important; border-color: #2196F3; transform: translateY(2px); }
+        .drum-zone { border-bottom: 4px solid #ff9800 !important; }
 
         .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         button { padding: 10px; border: none; border-radius: 8px; font-size: 0.8rem; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
@@ -66,7 +67,7 @@
                 <option value="trombone">Trombone (Sustain)</option>
                 <option value="french-horn">French Horn</option>
                 <option value="oboe">Oboe (Sustain)</option>
-                <option value="drums">DRUM KIT</option>
+                <option value="drums">DRUM KIT (Special)</option>
             </select>
             <div style="margin-top:10px">
                 <label>KEY SIGNATURE</label>
@@ -111,14 +112,20 @@
     const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     const naturalBase = ["C", "D", "E", "F", "G", "A", "B"];
     const flatToSharp = { "Cb":"B", "Db":"C#", "Eb":"D#", "Fb":"E", "Gb":"F#", "Ab":"G#", "Bb":"A#" };
-    const keyMap = {'1':'C2','2':'D2','3':'E2','4':'F2','5':'G2','6':'A2','7':'B2','8':'C3','9':'D3','0':'E3','q':'F3','w':'G3','e':'A3','r':'B3','t':'C4','y':'D4','u':'E4','i':'F4','o':'G4','p':'A4','a':'B4','s':'C5','d':'D5','f':'E5','g':'F5','h':'G5','j':'A5','k':'B5','l':'C6','z':'D7','x':'E7','c':'F7','v':'G7','b':'A7','n':'B7','m':'C8'};
+    
+    // UPDATED KEY MAP
+    const keyMap = {
+        '1':'C2','2':'D2','3':'E2','4':'F2','5':'G2','6':'A2','7':'B2',
+        '8':'C3','9':'D3','0':'E3','q':'F3','w':'G3','e':'A3','r':'B3',
+        't':'C4','y':'D4','u':'E4','i':'F4','o':'G4','p':'A4','a':'B4',
+        's':'C5','d':'D5','f':'E5','g':'F5','h':'G5','j':'A5','k':'B5',
+        'l':'C6','z':'D6','x':'E6','c':'F6','v':'G6','b':'A6','n':'B6','m':'C7'
+    };
 
     let activeAccs = {}, currentNoteFull, hasGuessed = false, score = 0, total = 0;
     let isRecording = false, startTime = 0, recordedNotes = [];
     let vibratoEnabled = false;
     let noiseBuffer = null;
-    
-    // Track active oscillators for sustain
     let activeVoices = {}; 
 
     function initNoise() {
@@ -173,11 +180,10 @@
             notes.forEach((noteName) => {
                 if (oct === 8 && noteName !== "C") return;
                 const key = document.createElement('div');
-                key.className = `key ${noteName.includes('#') ? 'black' : 'white'}`;
+                key.className = `key ${noteName.includes('#') ? 'black' : 'white'} ${oct===1 ? 'drum-zone' : ''}`;
                 key.id = `key-${noteName.replace('#', 's')}${oct}`;
-                if (noteName === "C") key.innerText = "C" + oct;
+                if (noteName === "C") key.innerText = oct === 1 ? "DRUMS" : "C" + oct;
                 
-                // MOUSE EVENTS
                 key.onmousedown = (e) => { e.preventDefault(); noteOn(noteName + oct, false); };
                 key.onmouseup = (e) => { e.preventDefault(); noteOff(noteName + oct); };
                 key.onmouseleave = (e) => { e.preventDefault(); noteOff(noteName + oct); };
@@ -189,9 +195,10 @@
         }
     }
 
-    // --- AUDIO ENGINE ---
     function startTone(freq, octave, type) {
-        if (type === 'drums') { playDrum(freq); return null; }
+        if (type === 'drums' || octave === 1) { // Force drums on Octave 1 if selected, or if instrument is drums
+            if(type === 'drums' || octave === 1) { playDrum(freq); return null; }
+        }
 
         const time = audioCtx.currentTime;
         const bend = parseFloat(document.getElementById('pitch-bend').value) / 100;
@@ -205,28 +212,26 @@
         mainFilter.connect(mainGain);
         mainGain.connect(audioCtx.destination);
         
-        let vibOsc = null, vibGain = null;
+        let vibOsc = null;
         if (vibratoEnabled && type !== 'piano') {
-            vibOsc = audioCtx.createOscillator(); vibGain = audioCtx.createGain();
-            vibOsc.frequency.value = 5; vibGain.gain.value = bentFreq * 0.02;
-            vibOsc.connect(vibGain); vibOsc.start(time);
-            vibGain.connect(osc.frequency);
+            vibOsc = audioCtx.createOscillator(); const vg = audioCtx.createGain();
+            vibOsc.frequency.value = 5; vg.gain.value = bentFreq * 0.02;
+            vibOsc.connect(vg); vg.connect(osc.frequency); vibOsc.start(time);
         }
 
         osc.frequency.setValueAtTime(bentFreq, time);
 
-        // ENVELOPES & FILTERS
         switch(type) {
             case 'piano': 
                 osc.type = "triangle"; mainFilter.frequency.value = 6000;
                 mainGain.gain.setValueAtTime(0, time);
-                mainGain.gain.linearRampToValueAtTime(0.6, time + 0.02); // Fast attack
-                mainGain.gain.setTargetAtTime(0.4, time + 0.1, 0.5); // Decay to Sustain
+                mainGain.gain.linearRampToValueAtTime(0.6, time + 0.02);
+                mainGain.gain.setTargetAtTime(0.4, time + 0.1, 0.5);
                 break;
             case 'violin':
                 osc.type = "sawtooth"; mainFilter.frequency.value = 2500;
                 mainGain.gain.setValueAtTime(0, time);
-                mainGain.gain.linearRampToValueAtTime(0.35, time + 0.3); // Slow bow attack
+                mainGain.gain.linearRampToValueAtTime(0.35, time + 0.3);
                 break;
             case 'flute':
                 osc.type = "sine"; mainFilter.frequency.value = 2000;
@@ -234,7 +239,6 @@
                 const ng = audioCtx.createGain(); ng.gain.value = 0.05;
                 noise.connect(mainFilter); noise.start(time);
                 mainGain.gain.linearRampToValueAtTime(0.4, time + 0.1);
-                // Attach noise to return object to stop it later
                 osc.noiseNode = noise;
                 break;
             case 'clarinet':
@@ -246,80 +250,69 @@
                 mainGain.gain.setValueAtTime(0, time);
                 mainGain.gain.linearRampToValueAtTime(0.3, time + 0.05);
                 break;
-            default: // Sax, Oboe, etc
+            default:
                 osc.type = type.includes('alto') ? "square" : "sawtooth";
                 mainFilter.frequency.value = type.includes('sax') ? 1500 : 2000;
                 mainGain.gain.setValueAtTime(0, time);
                 mainGain.gain.linearRampToValueAtTime(0.3, time + 0.1);
         }
 
-        osc.connect(mainFilter);
-        osc.start(time);
-        
+        osc.connect(mainFilter); osc.start(time);
         return { osc, gain: mainGain, type, vibOsc, noiseNode: osc.noiseNode };
     }
 
     function stopTone(voice) {
         if (!voice) return;
         const time = audioCtx.currentTime;
-        const release = (voice.type === 'piano') ? 0.3 : 0.1; // Piano rings slightly longer on release
-        
+        const release = (voice.type === 'piano') ? 0.3 : 0.1; 
         voice.gain.gain.cancelScheduledValues(time);
         voice.gain.gain.setValueAtTime(voice.gain.gain.value, time);
         voice.gain.gain.exponentialRampToValueAtTime(0.001, time + release);
-        
         voice.osc.stop(time + release);
         if(voice.vibOsc) voice.vibOsc.stop(time + release);
         if(voice.noiseNode) voice.noiseNode.stop(time + release);
     }
 
     function playDrum(freq) {
+        if (document.getElementById('inst-select').value !== 'drums') return; // Only play if drums selected
+        
         const time = audioCtx.currentTime;
         const idx = Math.round(12 * Math.log2(freq / 440) + 57) % 12;
         const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+        
         if(idx === 0) { osc.frequency.setValueAtTime(150, time); osc.frequency.exponentialRampToValueAtTime(0.01, time+0.5); }
         else if(idx === 2) { osc.type="square"; osc.frequency.setValueAtTime(200, time); }
         else { osc.type="sawtooth"; osc.frequency.setValueAtTime(8000, time); }
+        
         g.gain.setValueAtTime(0.5, time); g.gain.exponentialRampToValueAtTime(0.01, time+0.3);
         osc.connect(g); g.connect(audioCtx.destination); osc.start(time); osc.stop(time+0.3);
     }
 
-    // --- INPUT HANDLING ---
-    
     function resolveNote(noteStr, isShifted) {
         let base = noteStr.replace(/[0-9]/g, '');
         let oct = parseInt(noteStr.replace(/\D/g, ''));
-        
         let activeMod = activeAccs[base];
         let finalDisplay = base;
-
-        if (isShifted) {
-            if (activeMod) finalDisplay = base; // Natural
-            else finalDisplay = base + "#"; // Sharp
-        } else {
-            if (activeMod) finalDisplay = activeMod;
-        }
+        
+        if (isShifted) { if (activeMod) finalDisplay = base; else finalDisplay = base + "#"; } 
+        else { if (activeMod) finalDisplay = activeMod; }
 
         let audioNote = finalDisplay;
         if (flatToSharp[finalDisplay]) audioNote = flatToSharp[finalDisplay];
-        if (audioNote === "E#") audioNote = "F"; 
-        if (audioNote === "B#") audioNote = "C";
+        if (audioNote === "E#") audioNote = "F"; if (audioNote === "B#") audioNote = "C";
 
         return { display: finalDisplay + oct, audio: audioNote, oct: oct };
     }
 
     function noteOn(noteStr, isShifted) {
-        if (activeVoices[noteStr]) return; // Already playing
-
+        if (activeVoices[noteStr]) return;
         const resolved = resolveNote(noteStr, isShifted);
         const freq = 440 * Math.pow(2, (notes.indexOf(resolved.audio) + (resolved.oct * 12) - 57) / 12);
         const inst = document.getElementById('inst-select').value;
         
-        // Start Audio
         const voice = startTone(freq, resolved.oct, inst);
-        if (voice) activeVoices[noteStr] = voice; // Store active voice
+        if (voice) activeVoices[noteStr] = voice;
 
-        // Visuals & Logic
         document.getElementById('chord-display').innerText = resolved.display;
         let visualKey = resolved.audio.replace('#', 's');
         const keyEl = document.getElementById(`key-${visualKey}${resolved.oct}`);
@@ -327,13 +320,11 @@
 
         if (isRecording) recordedNotes.push({ note: resolved.display, time: Date.now() - startTime });
 
-        // Scoring Logic
         if (!hasGuessed && currentNoteFull) {
             total++;
             let targetAudio = currentNoteFull;
             let targetBase = targetAudio.replace(/\d/g,'');
             if (flatToSharp[targetBase]) targetAudio = flatToSharp[targetBase] + targetAudio.replace(/\D/g,'');
-
             if ((resolved.audio + resolved.oct) === targetAudio) { score++; document.getElementById('chord-display').innerText = "Correct!"; }
             else { document.getElementById('chord-display').innerText = "Wrong: " + currentNoteFull; }
             hasGuessed = true; document.getElementById('score-correct').innerText = score; document.getElementById('score-total').innerText = total;
@@ -342,35 +333,11 @@
 
     function noteOff(noteStr) {
         if (!activeVoices[noteStr]) return;
-        
-        // Stop Audio
         stopTone(activeVoices[noteStr]);
         delete activeVoices[noteStr];
-
-        // Stop Visuals (we have to re-resolve to find the key ID, assumed same shift state not needed for finding key ID usually)
-        // A simple way is to clear ALL keys if we aren't tracking shift state perfectly, but let's try to resolve base.
-        let base = noteStr.replace(/[0-9]/g, '');
-        let oct = parseInt(noteStr.replace(/\D/g, ''));
-        // We iterate to find active key classes or just clear the specific one if we knew the accidental.
-        // Simplification: Remove active-play from ALL keys associated with this note letter/octave
-        // (Since visual key depends on accidental state which might have changed).
-        // Actually, we can just clear active-play from the key calculated by current settings.
-        const resolved = resolveNote(noteStr, false); // Assuming shift released? 
-        // Better: Just clear the specific ID calculated during noteOn.
-        // To do this perfectly, we'd store the DOM ID in activeVoices.
-        // For now, let's just clear the likely candidates.
-        let keyID1 = `key-${base}${oct}`;
-        let keyID2 = `key-${base}s${oct}`;
-        let el1 = document.getElementById(keyID1); if(el1) el1.classList.remove('active-play');
-        let el2 = document.getElementById(keyID2); if(el2) el2.classList.remove('active-play');
-        // Also handle flats mapping to sharps
-        notes.forEach(n => {
-             let k = document.getElementById(`key-${n.replace('#','s')}${oct}`);
-             if(k) k.classList.remove('active-play'); 
-        });
+        document.querySelectorAll('.key').forEach(k => k.classList.remove('active-play'));
     }
 
-    // Keyboard Events
     window.addEventListener('keydown', (e) => {
         if (e.repeat) return;
         const mapped = keyMap[e.key.toLowerCase()] || keyMap[e.key];
@@ -381,13 +348,9 @@
         const mapped = keyMap[e.key.toLowerCase()] || keyMap[e.key];
         if (mapped) { e.preventDefault(); noteOff(mapped); }
     });
+    
+    window.addEventListener('mouseup', () => { for(let n in activeVoices) noteOff(n); });
 
-    // Mouse release safety
-    window.addEventListener('mouseup', () => {
-        for(let n in activeVoices) noteOff(n);
-    });
-
-    // Standard Controls
     document.getElementById('pitch-bend').onmouseup = function() { this.value = 0; };
     document.getElementById('vibrato-toggle').onclick = function() { vibratoEnabled = !vibratoEnabled; this.innerText = vibratoEnabled ? "〰️ Vibrato: ON" : "〰️ Vibrato: OFF"; };
     document.getElementById('rec-btn').onclick = () => { isRecording = true; recordedNotes = []; startTime = Date.now(); };
@@ -402,12 +365,8 @@
             let base = n.note.replace(/[0-9]/g, ''); let oct = parseInt(n.note.replace(/\D/g, ''));
             if(flatToSharp[base]) base = flatToSharp[base];
             const freq = 440 * Math.pow(2, (notes.indexOf(base) + (oct * 12) - 57) / 12);
-            // Playback doesn't support sustain in this simple version (it plays fixed length), 
-            // but we use the new startTone logic with a manual stop timeout.
-            const inst = document.getElementById('inst-select').value;
-            const v = startTone(freq, oct, inst);
-            // Auto-stop after 0.5s for playback preview
-            setTimeout(() => stopTone(v), 500);
+            const v = startTone(freq, oct, document.getElementById('inst-select').value);
+            setTimeout(() => stopTone(v), 400);
         });
     };
     document.getElementById('next-btn').onclick = () => {
@@ -416,7 +375,7 @@
         hasGuessed = false; document.getElementById('chord-display').innerText = "???";
         const freq = 440 * Math.pow(2, (nIdx + (oct * 12) - 57) / 12);
         const v = startTone(freq, oct, document.getElementById('inst-select').value);
-        setTimeout(() => stopTone(v), 1000); // Preview length
+        setTimeout(() => stopTone(v), 800);
     };
 
     initAccidentals(); createKeyboard();
